@@ -1,3 +1,5 @@
+<img align="right" width="150" height="150" src="https://avatars0.githubusercontent.com/u/6076200">
+
 # Chihaya
 
 [![Build Status](https://api.travis-ci.org/chihaya/chihaya.svg?branch=master)](https://travis-ci.org/chihaya/chihaya)
@@ -15,37 +17,37 @@ Chihaya is an open source [BitTorrent tracker] written in [Go].
 
 Differentiating features include:
 
-- Protocol-agnostic middleware
-- HTTP and UDP frontends
+- HTTP and UDP protocols
 - IPv4 and IPv6 support
+- Pre/Post middlware hooks
 - [YAML] configuration
 - Metrics via [Prometheus]
+- Kubernetes deployment via [Helm]
 
 [releases]: https://github.com/chihaya/chihaya/releases
-[BitTorrent tracker]: http://en.wikipedia.org/wiki/BitTorrent_tracker
+[BitTorrent tracker]: https://en.wikipedia.org/wiki/BitTorrent_tracker
 [Go]: https://golang.org
-[YAML]: http://yaml.org
-[Prometheus]: http://prometheus.io
+[YAML]: https://yaml.org
+[Prometheus]: https://prometheus.io
+[Helm]: https://helm.sh
 
 ## Why Chihaya?
 
 Chihaya is built for developers looking to integrate BitTorrent into a preexisting production environment.
 Chihaya's pluggable architecture and middleware framework offers a simple and flexible integration point that abstracts the BitTorrent tracker protocols.
-The most common use case for Chihaya is integration with the deployment of cloud software.
-
-[OpenBittorrent]: https://openbittorrent.com
+The most common use case for Chihaya is enabling peer-to-peer cloud software deployments.
 
 ### Production Use
 
 #### Facebook
 
 [Facebook] uses BitTorrent to deploy new versions of their software.
-In order to optimize the flow of traffic within their datacenters, Chihaya is configured to prefer peers within the same subnet.
+In order to optimize the flow of traffic within their datacenters, Facebook uses an alternative Storage driver for Chihaya that is configured to prefer peers within the same subnet.
 Because Facebook organizes their network such that server racks are allocated IP addresses in the same subnet, the vast majority of deployment traffic never impacts the congested areas of their network.
 
 [Facebook]: https://facebook.com
 
-#### CoreOS
+#### Red Hat
 
 [Quay] is a container registry that offers the ability to download containers via BitTorrent in order to speed up large or geographically distant deployments.
 Announce URLs from Quay's torrent files contain a [JWT] in order to allow Chihaya to verify that an infohash was approved by the registry.
@@ -121,30 +123,7 @@ For more information read [CONTRIBUTING.md].
 
 ### Architecture
 
-```
- +----------------------+
- |  BitTorrent Client   |<--------------+
- +----------------------+               |
-             |                          |
-             |                          |
-             |                          |
-+------------v--------------------------+-------------------+-------------------------+
-|+----------------------+   +----------------------+frontend|                  chihaya|
-||        Parser        |   |        Writer        |        |                         |
-|+----------------------+   +----------------------+        |                         |
-|            |                          ^                   |                         |
-+------------+--------------------------+-------------------+                         |
-+------------v--------------------------+-------------------+                         |
-|+----------------------+   +----------------------+   logic|                         |
-||  PreHook Middleware  |-->|  Response Generator  |<-------|-------------+           |
-|+----------------------+   +----------------------+        |             |           |
-|                                                           |             |           |
-|+----------------------+                                   | +----------------------+|
-|| PostHook Middleware  |-----------------------------------|>|       Storage        ||
-|+----------------------+                                   | +----------------------+|
-|                                                           |                         |
-+-----------------------------------------------------------+-------------------------+
-```
+[![](https://cdn.rawgit.com/jzelinskie/a6da3aafff1f397387c74c16ce27ad36/raw/79399349c99711c51e18d5b5d92a382cfdddeedb/diagram.svg)](https://gist.github.com/jzelinskie/a6da3aafff1f397387c74c16ce27ad36)
 
 BitTorrent clients send Announce and Scrape requests to a _Frontend_.
 Frontends parse requests and write responses for the particular protocol they implement.
@@ -153,7 +132,7 @@ A configurable chain of _PreHook_ and _PostHook_ middleware is used to construct
 PreHooks are middleware that are executed before the response has been written.
 After all PreHooks have executed, any missing response fields that are required are filled by reading out of the configured implementation of the _Storage_ interface.
 PostHooks are asynchronous tasks that occur after a response has been delivered to the client.
-Request data is written to the storage asynchronously in one of these PostHooks.
+Because they are unnecessary to for generating a response, updates to the Storage for a particular request are done asynchronously in a PostHook.
 
 ## Related projects
 
