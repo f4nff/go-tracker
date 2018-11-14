@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"fmt"
-	"net/http"
+//	"net/http"
 	"time"
 
 	"github.com/anacrolix/torrent/tracker"
@@ -91,7 +91,7 @@ func testWithInfohash(infoHash [20]byte, url string, delay time.Duration) error 
 		TrackerUrl: url,
 		Request:    req,
 		UserAgent:  "chihaya-e2e",
-		HttpClient: &http.Client{},
+//		HttpClient: &http.Client{},
 	}.Do()
 	if err != nil {
 		return errors.Wrap(err, "announce failed")
@@ -119,7 +119,7 @@ func testWithInfohash(infoHash [20]byte, url string, delay time.Duration) error 
 		TrackerUrl: url,
 		Request:    req,
 		UserAgent:  "chihaya-e2e",
-		HttpClient: &http.Client{},
+//		HttpClient: &http.Client{},
 	}.Do()
 	if err != nil {
 		return errors.Wrap(err, "announce failed")
